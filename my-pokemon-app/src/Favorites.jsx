@@ -1,22 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { db } from './firebase';
 export default function Favorites({ user, refresh = 0 }) {
   const [favorites, setFavorites] = useState([]);
-  const fetchFavorites = async () => {
-    if (!user?.uid) return;
+  const fetchFavorites = useCallback(async () => {
+    if (!user) return;
     const favRef = collection(db, 'users', user.uid, 'favorites');
     const snapshot = await getDocs(favRef);
     const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     setFavorites(data);
-  };
+  }, [user]);
   const removeFavorite = async (id) => {
     await deleteDoc(doc(db, 'users', user.uid, 'favorites', id));
     fetchFavorites();
   };
   useEffect(() => {
     if (user) fetchFavorites();
-  }, [user, refresh]);
+  }, [user, refresh, fetchFavorites]);
   if (!user) return <p>Please log in to view your favorites.</p>;
   return (
     <div>
@@ -33,11 +33,7 @@ export default function Favorites({ user, refresh = 0 }) {
               textAlign: 'center',
             }}
           >
-            <img
-              src={p.image}
-              alt={p.name}
-              style={{ width: '100px', height: '100px' }}
-            />
+            <img src={p.image} alt={p.name} style={{ width: '100px', height: '100px' }} />
             <p className="capitalize">{p.name}</p>
             <button
               onClick={() => removeFavorite(p.id)}
@@ -47,7 +43,6 @@ export default function Favorites({ user, refresh = 0 }) {
                 border: 'none',
                 padding: '0.5rem',
                 borderRadius: '4px',
-                marginTop: '0.5rem',
               }}
             >
               Remove
