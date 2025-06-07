@@ -4,6 +4,7 @@ import { db } from './firebase';
 export default function Favorites({ user, refresh = 0 }) {
   const [favorites, setFavorites] = useState([]);
   const fetchFavorites = async () => {
+    if (!user?.uid) return;
     const favRef = collection(db, 'users', user.uid, 'favorites');
     const snapshot = await getDocs(favRef);
     const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -32,11 +33,22 @@ export default function Favorites({ user, refresh = 0 }) {
               textAlign: 'center',
             }}
           >
-            <img src={p.image} alt={p.name} style={{ width: '100px', height: '100px' }} />
+            <img
+              src={p.image}
+              alt={p.name}
+              style={{ width: '100px', height: '100px' }}
+            />
             <p className="capitalize">{p.name}</p>
             <button
               onClick={() => removeFavorite(p.id)}
-              style={{ background: 'red', color: 'white', border: 'none', padding: '0.5rem', borderRadius: '4px' }}
+              style={{
+                background: 'red',
+                color: 'white',
+                border: 'none',
+                padding: '0.5rem',
+                borderRadius: '4px',
+                marginTop: '0.5rem',
+              }}
             >
               Remove
             </button>
